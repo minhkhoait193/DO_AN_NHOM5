@@ -43,3 +43,11 @@ conda activate ./env
 
 Cài đặt thư viện cần thiết:
 pip install -r requirements.txt
+
+Nếu thiếu lap hoặc scikit-image, bạn có thể thêm:
+pip install lap scikit-image
+
+Cách sử dụng
+
+
+
