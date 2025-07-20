@@ -39,7 +39,7 @@ Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số
 ```bash
 conda create --prefix ./env python=3.10 -y
 conda activate ./env
-
+```
 
 Cài đặt thư viện cần thiết:
 pip install -r requirements.txt
