@@ -1,6 +1,6 @@
-# 🚗 Hệ thống Nhận diện và Theo dõi Biển số xe bằng YOLOv8 + SORT
+#  Hệ thống Nhận diện và Theo dõi Biển số xe bằng YOLOv8 + SORT
 
-## 🧠 Mô tả
+##  Mô tả
 
 Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số từ video đầu vào, sau đó sử dụng thuật toán SORT để theo dõi xe. Biển số sẽ được đọc bằng EasyOCR. Dữ liệu được xuất ra file `.csv`, sau đó được nội suy để điền đầy đủ thông tin khung hình, cuối cùng tạo ra video hiển thị kết quả mượt mà.
 
@@ -8,16 +8,27 @@ Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số
 
 ## 📂 Cấu trúc thư mục
 ├── main.py # Nhận diện xe & biển số, xuất test.csv
+
 ├── add_missing_data.py # Nội suy dữ liệu còn thiếu -> test_interpolated.csv
+
 ├── visualize.py # Vẽ bounding box + hiển thị biển số lên video
+
 ├── util.py # Các hàm hỗ trợ: OCR, định dạng biển số, xuất csv
+
 ├── requirements.txt # Thư viện cần thiết
+
 ├── sample.mp4 # Video đầu vào
+
 ├── yolov8n.pt # Mô hình YOLOv8 phát hiện xe
+
 ├── license_plate_detector.pt # Mô hình YOLOv8 phát hiện biển số
+
 ├── test.csv # Kết quả thô từ YOLO + OCR
+
 ├── test_interpolated.csv # Kết quả sau nội suy
+
 └── sort/
+
 └── sort.py # Thuật toán SORT (tracking)
 
 
