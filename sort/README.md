@@ -1,12 +1,12 @@
-# 🛰️ SORT (Simple Online and Realtime Tracking)
+# 🛰 SORT (Simple Online and Realtime Tracking)
 
 Đây là mã nguồn của **SORT** – một thuật toán theo dõi đối tượng theo thời gian thực đơn giản và hiệu quả, được sử dụng để theo dõi các vật thể (ví dụ: xe, người) trong video.
 
-> 📌 SORT đã được tích hợp vào project chính để theo dõi xe dựa trên bounding box từ YOLOv8.
+>  SORT đã được tích hợp vào project chính để theo dõi xe dựa trên bounding box từ YOLOv8.
 
 ---
 
-## 📘 Giới thiệu
+##  Giới thiệu
 
 SORT hoạt động bằng cách kết hợp:
 - **Kalman Filter** – dự đoán vị trí tiếp theo của đối tượng.
@@ -16,7 +16,7 @@ SORT hoạt động bằng cách kết hợp:
 
 ---
 
-## 📦 Cấu trúc
+##  Cấu trúc
 
 soft/
 ├── sort.py # Toàn bộ mã nguồn của thuật toán SORT
