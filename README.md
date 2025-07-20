@@ -6,7 +6,7 @@ Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số
 
 ---
 
-## 📂 Cấu trúc thư mục
+## Cấu trúc thư mục
 ├── main.py # Nhận diện xe & biển số, xuất test.csv
 
 ├── add_missing_data.py # Nội suy dữ liệu còn thiếu -> test_interpolated.csv
@@ -34,7 +34,7 @@ Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số
 
 ---
 
-## 📥 Tải dữ liệu & mô hình
+##  Tải dữ liệu & mô hình
 
 - 🔗 Video mẫu: [Download tại đây](https://drive.google.com/file/d/1JbwLyqpFCXmftaJY1oap8Sa6KfjoWJta/view?usp=sharing)
 - 🔗 Mô hình biển số: [Download tại đây](https://drive.google.com/file/d/1Zmf5ynaTFhmln2z7Qvv-tgjkWQYQ9Zdw/view?usp=sharing)
@@ -42,9 +42,9 @@ Dự án này sử dụng mô hình YOLOv8 để phát hiện xe và biển số
 
 ---
 
-## 🧪 Cài đặt môi trường
+##  Cài đặt môi trường
 
-> ⚠️ Yêu cầu: Python 3.10, pip, pip install hỗ trợ GPU nếu có thể.
+>  Yêu cầu: Python 3.10, pip, pip install hỗ trợ GPU nếu có thể.
 
 1. **Tạo môi trường (nếu dùng conda)**:
 ```bash
