@@ -48,7 +48,24 @@ Nếu thiếu lap hoặc scikit-image, bạn có thể thêm:
 pip install lap scikit-image
 
 Cách sử dụng
+## Bước 1: Chạy mô hình nhận diện
 ```bash
+python main.py
+```
+## Bước 2: Nội suy khung hình còn thiếu
+```bash
+python add_missing_data.py
+```
+## Bước 3: Hiển thị kết quả ra video
+```bash
+python visualize.py
+```
 
+Thư viện sử dụng chính
+YOLOv8 (ultralytics) – phát hiện xe, biển số
 
+EasyOCR – đọc ký tự biển số
 
+SORT (Simple Online and Realtime Tracker) – theo dõi đối tượng
+
+OpenCV – xử lý và hiển thị video
