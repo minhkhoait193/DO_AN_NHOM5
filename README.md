@@ -82,3 +82,23 @@ EasyOCR – đọc ký tự biển số
 SORT (Simple Online and Realtime Tracker) – theo dõi đối tượng
 
 OpenCV – xử lý và hiển thị video
+
+
+Ghi chú
+---
+Nếu bạn muốn xử lý toàn bộ video, có thể sửa main.py dòng:
+```bash
+if ret and frame_nmr < 1000:
+
+thành
+
+if ret:
+```
+
+
+
+
+
+
+
+
