@@ -3,6 +3,8 @@ import easyocr
 
 # Initialize the OCR reader
 reader = easyocr.Reader(['en'], gpu=False)
+# ✅ Khởi tạo trình đọc OCR bằng EasyOCR, hỗ trợ tiếng Anh và không dùng GPU.
+
 
 # Mapping dictionaries for character conversion
 dict_char_to_int = {'O': '0',
@@ -18,9 +20,14 @@ dict_int_to_char = {'0': 'O',
                     '4': 'A',
                     '6': 'G',
                     '5': 'S'}
-
+# Dùng để sửa lỗi nhận dạng phổ biến khi đọc biển số. Ví dụ:
+# OCR thấy O nhưng thật ra là 0
+# OCR thấy S nhưng thật ra là 5
 
 def write_csv(results, output_path):
+#     Ghi dữ liệu từ biến results (dictionary có cấu trúc: {frame_nmr: {car_id: {...}}}) ra file .csv.
+# Mỗi dòng gồm: số khung hình, ID xe, bbox xe, bbox biển số, điểm xác suất, nội dung biển số, độ tin cậy OCR.
+# Chỉ ghi nếu có đầy đủ dữ liệu cả xe và biển số có OCR thành công.
     """
     Write the results to a CSV file.
 
@@ -57,7 +64,9 @@ def write_csv(results, output_path):
                             )
         f.close()
 
-
+#  Kiểm tra xem chuỗi ký tự đọc được có đúng định dạng 7 ký tự không:
+# Vị trí 0,1,4,5,6 → phải là chữ cái (hoặc số giả chữ: 0 → O, 1 → I, ...)
+# Vị trí 2,3 → phải là số (hoặc chữ giả số: S → 5, ...)
 def license_complies_format(text):
     """
     Check if the license plate text complies with the required format.
@@ -82,7 +91,9 @@ def license_complies_format(text):
     else:
         return False
 
-
+# Dựa vào vị trí ký tự, chuyển đổi chữ thành số hoặc số thành chữ để chuẩn hóa biển số.
+# Vị trí 0,1,4,5,6 → số thành chữ (0 → O, ...)
+# Vị trí 2,3 → chữ thành số (S → 5, ...)
 def format_license(text):
     """
     Format the license plate text by converting characters using the mapping dictionaries.
@@ -104,7 +115,9 @@ def format_license(text):
 
     return license_plate_
 
-
+# Dùng EasyOCR để đọc chữ từ ảnh license_plate_crop đã xử lý trước đó (cắt từ frame video).
+# Nếu đọc được text → kiểm tra định dạng → nếu hợp lệ thì định dạng lại → trả về text + score
+# Nếu không hợp lệ → trả về None, None
 def read_license_plate(license_plate_crop):
     """
     Read the license plate text from the given cropped image.
@@ -128,7 +141,7 @@ def read_license_plate(license_plate_crop):
 
     return None, None
 
-
+#  So sánh xem bounding box của biển số nằm trong xe nào bằng cách:
 def get_car(license_plate, vehicle_track_ids):
     """
     Retrieve the vehicle coordinates and ID based on the license plate coordinates.
@@ -145,7 +158,8 @@ def get_car(license_plate, vehicle_track_ids):
     foundIt = False
     for j in range(len(vehicle_track_ids)):
         xcar1, ycar1, xcar2, ycar2, car_id = vehicle_track_ids[j]
-
+# Nếu tìm được xe bao trùm biển số → trả về tọa độ xe và ID.
+# Nếu không tìm được → trả về -1, -1, -1, -1, -1
         if x1 > xcar1 and y1 > ycar1 and x2 < xcar2 and y2 < ycar2:
             car_indx = j
             foundIt = True
