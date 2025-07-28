@@ -2,11 +2,13 @@ import string
 import easyocr
 
 # Initialize the OCR reader
+# Khởi tạo EasyOCR để đọc chữ trên biển số, dùng tiếng Anh, không dùng GPU
 reader = easyocr.Reader(['en'], gpu=False)
 # ✅ Khởi tạo trình đọc OCR bằng EasyOCR, hỗ trợ tiếng Anh và không dùng GPU.
 
 
 # Mapping dictionaries for character conversion
+# Bản đồ chuyển ký tự dễ bị OCR nhận sai (ví dụ 'S' bị đọc thành '5') từ chữ → số
 dict_char_to_int = {'O': '0',
                     'I': '1',
                     'J': '3',
@@ -14,6 +16,7 @@ dict_char_to_int = {'O': '0',
                     'G': '6',
                     'S': '5'}
 
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
 dict_int_to_char = {'0': 'O',
                     '1': 'I',
                     '3': 'J',
@@ -24,6 +27,7 @@ dict_int_to_char = {'0': 'O',
 # OCR thấy O nhưng thật ra là 0
 # OCR thấy S nhưng thật ra là 5
 
+# Ghi kết quả nhận diện vào file CSV gồm: frame, ID xe, tọa độ xe, tọa độ biển số, nội dung, độ tin cậy
 def write_csv(results, output_path):
 #     Ghi dữ liệu từ biến results (dictionary có cấu trúc: {frame_nmr: {car_id: {...}}}) ra file .csv.
 # Mỗi dòng gồm: số khung hình, ID xe, bbox xe, bbox biển số, điểm xác suất, nội dung biển số, độ tin cậy OCR.
@@ -67,6 +71,7 @@ def write_csv(results, output_path):
 #  Kiểm tra xem chuỗi ký tự đọc được có đúng định dạng 7 ký tự không:
 # Vị trí 0,1,4,5,6 → phải là chữ cái (hoặc số giả chữ: 0 → O, 1 → I, ...)
 # Vị trí 2,3 → phải là số (hoặc chữ giả số: S → 5, ...)
+# Kiểm tra định dạng biển số có hợp lệ không (ví dụ phải là 2 chữ + 2 số + 3 chữ)
 def license_complies_format(text):
     """
     Check if the license plate text complies with the required format.
@@ -80,12 +85,19 @@ def license_complies_format(text):
     if len(text) != 7:
         return False
 
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
     if (text[0] in string.ascii_uppercase or text[0] in dict_int_to_char.keys()) and \
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
        (text[1] in string.ascii_uppercase or text[1] in dict_int_to_char.keys()) and \
+# Bản đồ chuyển ký tự dễ bị OCR nhận sai (ví dụ 'S' bị đọc thành '5') từ chữ → số
        (text[2] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[2] in dict_char_to_int.keys()) and \
+# Bản đồ chuyển ký tự dễ bị OCR nhận sai (ví dụ 'S' bị đọc thành '5') từ chữ → số
        (text[3] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[3] in dict_char_to_int.keys()) and \
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
        (text[4] in string.ascii_uppercase or text[4] in dict_int_to_char.keys()) and \
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
        (text[5] in string.ascii_uppercase or text[5] in dict_int_to_char.keys()) and \
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
        (text[6] in string.ascii_uppercase or text[6] in dict_int_to_char.keys()):
         return True
     else:
@@ -94,6 +106,7 @@ def license_complies_format(text):
 # Dựa vào vị trí ký tự, chuyển đổi chữ thành số hoặc số thành chữ để chuẩn hóa biển số.
 # Vị trí 0,1,4,5,6 → số thành chữ (0 → O, ...)
 # Vị trí 2,3 → chữ thành số (S → 5, ...)
+# Định dạng lại biển số theo cấu trúc chuẩn bằng cách sửa các ký tự dễ nhầm lẫn
 def format_license(text):
     """
     Format the license plate text by converting characters using the mapping dictionaries.
@@ -105,7 +118,9 @@ def format_license(text):
         str: Formatted license plate text.
     """
     license_plate_ = ''
+# Bản đồ chuyển ngược từ số → chữ nếu bị OCR nhận nhầm
     mapping = {0: dict_int_to_char, 1: dict_int_to_char, 4: dict_int_to_char, 5: dict_int_to_char, 6: dict_int_to_char,
+# Bản đồ chuyển ký tự dễ bị OCR nhận sai (ví dụ 'S' bị đọc thành '5') từ chữ → số
                2: dict_char_to_int, 3: dict_char_to_int}
     for j in [0, 1, 2, 3, 4, 5, 6]:
         if text[j] in mapping[j].keys():
@@ -118,6 +133,7 @@ def format_license(text):
 # Dùng EasyOCR để đọc chữ từ ảnh license_plate_crop đã xử lý trước đó (cắt từ frame video).
 # Nếu đọc được text → kiểm tra định dạng → nếu hợp lệ thì định dạng lại → trả về text + score
 # Nếu không hợp lệ → trả về None, None
+# Đọc nội dung từ ảnh biển số bằng EasyOCR và kiểm tra định dạng hợp lệ
 def read_license_plate(license_plate_crop):
     """
     Read the license plate text from the given cropped image.
@@ -142,6 +158,7 @@ def read_license_plate(license_plate_crop):
     return None, None
 
 #  So sánh xem bounding box của biển số nằm trong xe nào bằng cách:
+# Xác định biển số thuộc xe nào bằng cách kiểm tra xem nó có nằm trong vùng của xe không
 def get_car(license_plate, vehicle_track_ids):
     """
     Retrieve the vehicle coordinates and ID based on the license plate coordinates.
