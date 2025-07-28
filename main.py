@@ -46,20 +46,21 @@ while ret:
         # ----------------------------------------
         # 3. Phát hiện biển số bằng mô hình riêng
         # ----------------------------------------
-        license_plates = license_plate_detector(frame)[0]
+        license_plates = license_plate_detector(frame)[0]# duyệt qua từng biển số với mô hình có sẵn để tìm được để xử lý tiếp.
         for license_plate in license_plates.boxes.data.tolist():
             x1, y1, x2, y2, score, class_id = license_plate
 
             # -------------------------------------
             # 4. Gán biển số vào xe phù hợp (nếu có)
             # -------------------------------------
-            xcar1, ycar1, xcar2, ycar2, car_id = get_car(license_plate, track_ids)
-            if car_id != -1:
-
+            xcar1, ycar1, xcar2, ycar2, car_id = get_car(license_plate, track_ids) 
+            #Tìm xe nào chứa biển số này bằng cách kiểm tra nếu biển số nằm trong bounding box của xe nào đó.
+            if car_id != -1: #Nếu tìm được xe phù hợp thì xử lý tiếp, nếu không thì bỏ qua.
                 # -------------------------------
                 # 5. Cắt và xử lý vùng biển số
                 # -------------------------------
-                license_plate_crop = frame[int(y1):int(y2), int(x1): int(x2), :]
+                #Chuyển sang ảnh xám và làm nổi bật chữ bằng threshold (ảnh đen trắng, chữ trắng trên nền đen).
+                license_plate_crop = frame[int(y1):int(y2), int(x1): int(x2), :] #Cắt vùng ảnh chứa biển số (crop từ frame gốc).
                 license_plate_crop_gray = cv2.cvtColor(license_plate_crop, cv2.COLOR_BGR2GRAY)
                 _, license_plate_crop_thresh = cv2.threshold(license_plate_crop_gray, 64, 255, cv2.THRESH_BINARY_INV)
 
@@ -67,18 +68,19 @@ while ret:
                 # 6. Đọc ký tự trên biển số bằng OCR
                 # -----------------------------------
                 license_plate_text, license_plate_text_score = read_license_plate(license_plate_crop_thresh)
-
+                # license_plate_text: chuỗi biển số
+                # text_score: độ chính xác
                 # ------------------------------------
                 # 7. Nếu đọc thành công thì lưu kết quả
                 # ------------------------------------
                 if license_plate_text is not None:
-                    results[frame_nmr][car_id] = {
-                        'car': {'bbox': [xcar1, ycar1, xcar2, ycar2]},
+                    results[frame_nmr][car_id] = {   # ví dụ lấy Xe ID = 5 xuất hiện ở khung hình số 128 results[128][5]
+                        'car': {'bbox': [xcar1, ycar1, xcar2, ycar2]}, # khung box của xe
                         'license_plate': {
-                            'bbox': [x1, y1, x2, y2],
-                            'text': license_plate_text,
-                            'bbox_score': score,
-                            'text_score': license_plate_text_score
+                            'bbox': [x1, y1, x2, y2],   # khung box biển số ở xe
+                            'text': license_plate_text,  # văn bản ở biển số
+                            'bbox_score': score,   # khung box ở biến số với độ chính xác 
+                            'text_score': license_plate_text_score # khung văn bản ở biến số với độ chính xác 
                         }
                     }
 
