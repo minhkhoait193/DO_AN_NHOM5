@@ -33,6 +33,7 @@ from filterpy.kalman import KalmanFilter
 np.random.seed(0)
 
 
+#  Hàm so khớp giữa bbox mới và bbox cũ bằng thuật toán Hungarian
 def linear_assignment(cost_matrix):
   try:
     import lap
@@ -44,6 +45,7 @@ def linear_assignment(cost_matrix):
     return np.array(list(zip(x, y)))
 
 
+#  Tính chỉ số IOU giữa các bounding box để biết 2 box có trùng nhau không
 def iou_batch(bb_test, bb_gt):
   """
   From SORT: Computes IOU between two bboxes in the form [x1,y1,x2,y2]
@@ -63,6 +65,7 @@ def iou_batch(bb_test, bb_gt):
   return(o)  
 
 
+#  Chuyển bbox [x1, y1, x2, y2] thành [x, y, s, r] dùng cho Kalman (vị trí + tỉ lệ)
 def convert_bbox_to_z(bbox):
   """
   Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
@@ -78,6 +81,7 @@ def convert_bbox_to_z(bbox):
   return np.array([x, y, s, r]).reshape((4, 1))
 
 
+#  Chuyển ngược lại từ [x, y, s, r] → [x1, y1, x2, y2] để hiển thị kết quả
 def convert_x_to_bbox(x,score=None):
   """
   Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
@@ -91,6 +95,7 @@ def convert_x_to_bbox(x,score=None):
     return np.array([x[0]-w/2.,x[1]-h/2.,x[0]+w/2.,x[1]+h/2.,score]).reshape((1,5))
 
 
+# Lớp theo dõi một đối tượng duy nhất (một xe) bằng Kalman Filter
 class KalmanBoxTracker(object):
   """
   This class represents the internal state of individual tracked objects observed as bbox.
@@ -120,6 +125,7 @@ class KalmanBoxTracker(object):
     self.hit_streak = 0
     self.age = 0
 
+# 🔄 Cập nhật vị trí xe khi có phát hiện mới từ YOLO
   def update(self,bbox):
     """
     Updates the state vector with observed bbox.
@@ -130,6 +136,7 @@ class KalmanBoxTracker(object):
     self.hit_streak += 1
     self.kf.update(convert_bbox_to_z(bbox))
 
+# 🔮 Dự đoán vị trí tiếp theo của xe nếu không thấy trong frame hiện tại
   def predict(self):
     """
     Advances the state vector and returns the predicted bounding box estimate.
@@ -144,6 +151,7 @@ class KalmanBoxTracker(object):
     self.history.append(convert_x_to_bbox(self.kf.x))
     return self.history[-1]
 
+# 📍 Lấy vị trí hiện tại được Kalman filter ước lượng của đối tượng
   def get_state(self):
     """
     Returns the current bounding box estimate.
@@ -151,6 +159,7 @@ class KalmanBoxTracker(object):
     return convert_x_to_bbox(self.kf.x)
 
 
+# 🤝 Gán các khung hình (bbox) mới vào các đối tượng đang theo dõi bằng thuật toán so khớp (Hungarian + IOU)
 def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   """
   Assigns detections to tracked object (both represented as bounding boxes)
@@ -196,6 +205,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
 
+#  Lớp chính quản lý toàn bộ hệ thống theo dõi nhiều đối tượng (xe), tạo và cập nhật ID
 class Sort(object):
   def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3):
     """
@@ -207,6 +217,7 @@ class Sort(object):
     self.trackers = []
     self.frame_count = 0
 
+#  Nhận đầu vào là các bbox mới → cập nhật đối tượng cũ, gán ID, và trả về kết quả theo dõi
   def update(self, dets=np.empty((0, 5))):
     """
     Params:
