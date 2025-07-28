@@ -5,42 +5,43 @@ from sort.sort import *                      # Import thuật toán SORT để t
 from util import get_car, read_license_plate, write_csv  # Hàm hỗ trợ xử lý biển số và ghi dữ liệu
 
 # Khởi tạo biến lưu kết quả và tracker
-results = {}                                 # Dictionary lưu kết quả theo từng khung hình
-mot_tracker = Sort()                         # Khởi tạo đối tượng SORT để theo dõi xe
+results = {}                                 # Dictionary rỗng lưu kết quả theo từng khung hình
+mot_tracker = Sort()                         # Khởi tạo đối tượng SORT nó sẽ giúp theo dõi các xe theo thời gian (gán ID cho từng xe khi xuất hiện).
 
 # Load mô hình phát hiện
 coco_model = YOLO('yolov8n.pt')              # Mô hình YOLOv8 dùng để phát hiện xe (class như car, bus, truck)
-license_plate_detector = YOLO('license_plate_detector.pt')  # Mô hình YOLO riêng để phát hiện biển số xe
+license_plate_detector = YOLO('license_plate_detector.pt')  # Mô hình đã được train, YOLO riêng để phát hiện biển số xe
 
 # Mở video đầu vào
-cap = cv2.VideoCapture('./sample.mp4')       # Đối tượng đọc video
+cap = cv2.VideoCapture('./sample.mp4')        # Đối tượng đọc video
 vehicles = [2, 3, 5, 7]                       # ID lớp trong YOLO tương ứng với các loại xe (car, motorbike, bus, truck)
 
 # Đọc từng khung hình và xử lý
 frame_nmr = -1
 ret = True
 while ret:
-    frame_nmr += 1
-    ret, frame = cap.read()
+    frame_nmr += 1 #đếm số khung hình (tăng dần).
+    #Frame là ảnh hiện tại (frame của video).
+    ret, frame = cap.read() 
 
     # Giới hạn chỉ xử lý 1000 khung hình đầu (nếu muốn xử lý toàn bộ thì bỏ điều kiện frame_nmr < 1000)
     if ret and frame_nmr < 1000:
-        results[frame_nmr] = {}
+        results[frame_nmr] = {}  #Tạo chỗ trống trong results để lưu kết quả xe trong khung hình hiện tại.
 
-        # -------------------------
+
         # 1. Phát hiện xe bằng YOLO
-        # -------------------------
-        detections = coco_model(frame)[0]
-        detections_ = []
-        for detection in detections.boxes.data.tolist():
-            x1, y1, x2, y2, score, class_id = detection
-            if int(class_id) in vehicles:
-                detections_.append([x1, y1, x2, y2, score])
 
-        # -----------------------------
+        detections = coco_model(frame)[0] # Dùng mô hình YOLO để phát hiện đối tượng trong frame. Trả ra danh sách tất cả đối tượng
+        detections_ = []
+        for detection in detections.boxes.data.tolist():  #Duyệt qua các kết quả YOLO phát hiện.
+            x1, y1, x2, y2, score, class_id = detection
+            if int(class_id) in vehicles: # Chỉ giữ lại những object có class là xe
+                detections_.append([x1, y1, x2, y2, score]) #danh sách xe được phát hiện.
+
+
         # 2. Theo dõi xe bằng SORT
-        # -----------------------------
-        track_ids = mot_tracker.update(np.asarray(detections_))  # Trả về tọa độ xe + ID được gán
+
+        track_ids = mot_tracker.update(np.asarray(detections_))  #  Cập nhật các khung xe mới vào SORT → gán ID cho từng xe → trả ra danh sách:
 
         # ----------------------------------------
         # 3. Phát hiện biển số bằng mô hình riêng
